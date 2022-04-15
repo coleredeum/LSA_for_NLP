@@ -37,7 +37,14 @@ Q = struct2array(Q);
 
 %%
 
-[cos1000, ind1000] = overall(M, 1000, Q);
+[cos1033, ind1033] = overall(M, 1033, Q);
+
+%
+
+%% Plotting the singular values
+
+[U,S,V] = svds(M, 1033);
+loglog(diag(S));
 
 %
 %% Get approximation vector for one document at a time 
