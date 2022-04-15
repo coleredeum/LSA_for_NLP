@@ -11,36 +11,38 @@ Q = struct2array(Q);
 
 %% Plot of Big Document Matrix 
 
-figure
-mesh(M)
-
-%
-
-%% Plot of Dict Document Matrix 
-
-figure
-mesh(dict)
+%figure
+%mesh(M)
 
 %
 
 %% Plot of  Document Matrix 
 
-figure
-mesh(Q)
+%figure
+%mesh(Q)
 
 %
 
-%% Cutted U, S, V 
+%% For 50 
 
-function [Uk, Sk, Vkt] = appR(A, k)
-    [U,S,V] = svd(A);
-    Uk = U(:, 1:k);
-    Sk = S(1:k, 1:k);
-    Vkt = V(:, 1:k)';
-end
+[cos50, ind50] = overall(M, 50, Q);
+
+%
+
+%%
+
+[cos500, ind500] = overall(M, 500, Q);
+
+%
+
+%%
+
+[cos1000, ind1000] = overall(M, 1000, Q);
+
 %
 %% Get approximation vector for one document at a time 
 function dk = VectorApp(Vkt, i)
+    Vkt = transpose(Vkt);
     dk = Vkt(:,i);
 end
 %
@@ -48,12 +50,42 @@ end
 
 function qk = NewQue(qt, Uk, Sk)
     Skinv = inv(Sk);
-    qk = qk*Uk*Skinv;
+    qk = transpose(qt)*Uk*Skinv;
 end
 %
 %% Compute Angle for one document 
 
-function cosSIm = CompAngle(a, b)
+function cosSim = CompAngle(a, b)
     cosSim = dot(a,b)/(norm(a)*norm(b));
 end
+%
+
+%%
+function [all_cosines, all_indices50] = overall(M, k, Q)
+    tic 
+    %[Uk, Sk, Vkt] = appR(M, 50);
+    [U,S,V] = svds(M, k);
+
+    [r c] = size(M);
+    count = 0;
+    all_indices50 = [];
+    all_cosines = [];
+    for j = 1:30
+        count = count+1;
+        q50 = NewQue(Q(:,j), U, S);
+        results = zeros(1033,1);
+        for i=1:c
+            dk = VectorApp(V, i);
+            cosSim = CompAngle(q50, dk);
+            results(i, 1) = cosSim;
+        end
+
+        [resultsS, indices] = sort(results, 'descend');
+        all_cosines = [all_cosines resultsS];
+        all_indices50 = [all_indices50 indices];
+    end
+    toc 
+end
+
+
 %

@@ -1,0 +1,73 @@
+%% Import Dataset
+
+M = load('A_med.mat');
+dict = load('dict_med.mat');
+Q = load('Q_med.mat');
+
+M = struct2array(M);
+dict = struct2array(dict);
+Q = struct2array(Q);
+%
+
+%% Plot of Big Document Matrix 
+
+figure
+mesh(M)
+
+%
+
+%% Plot of  Document Matrix 
+
+figure
+mesh(Q)
+
+%
+
+%%
+
+disp(class(Q));
+%
+%%
+
+tic 
+%[Uk, Sk, Vkt] = appR(M, 50);
+[U,S,V] = svds(M, 50);
+
+[r c] = size(M);
+count = 0;
+all_indices50 = [];
+for j = 1:30
+    count = count+1;
+    q50 = NewQue(Q(:,j), U, S);
+    results = zeros(1033,1);
+    for i=1:c
+        dk = VectorApp(V, i);
+        cosSim = CompAngle(q50, dk);
+        results(i, 1) = cosSim;
+    end
+
+    [resultsS, indices] = sort(results, 'descend');
+    all_indices50 = [all_indices50 indices];
+end
+toc 
+%
+
+%% Get approximation vector for one document at a time 
+function dk = VectorApp(Vkt, i)
+    Vkt = transpose(Vkt);
+    dk = Vkt(:,i);
+end
+%
+%% Get new query vector
+
+function qk = NewQue(qt, Uk, Sk)
+    Skinv = inv(Sk);
+    qk = transpose(qt)*Uk*Skinv;
+end
+%
+%% Compute Angle for one document 
+
+function cosSim = CompAngle(a, b)
+    cosSim = dot(a,b)/(norm(a)*norm(b));
+end
+%
